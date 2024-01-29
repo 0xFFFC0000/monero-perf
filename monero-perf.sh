@@ -35,6 +35,11 @@ EOF
   exit 0;
 }
 
+# Log function
+_log(){
+    if [ "${LOG}" ]; then echo $1; fi
+}
+
 # Check result and fail
 check_result(){
     return_code=$1
@@ -61,7 +66,7 @@ while true; do
   esac
 done
 
-if [ "${LOG}" ]; then echo "Logging is enabled"; fi
+_log "Logging is enabled"
 
 if [ -z "${MAIN_MONERO}" ]; then
     check_result -1 "Provide main monero executable location with -m|--main_monero"
@@ -76,13 +81,13 @@ if [ -z "${TEST_MONERO_CONFIG_LOCATION}" ]; then
 fi
 
 # Run backgound Monero
-if [ "${LOG}" ]; then echo  "Starting the main node..."; fi
+_log  "Starting the main node..."
 $MAIN_MONERO --detach --config-file=$MAIN_MONERO_CONFIG_LOCATION > /dev/null
 
 # Wait until both monerod synced
 wait_sync_monerod(){
     # Wait until monerod is synchronized
-    if [ "${LOG}" ]; then echo  "Waiting to sync test monero..."; fi
+    _log  "Waiting to sync test monero..."
     while : ; do
         sleep 0.1s
         testingmonero_height=$(curl --silent http://127.0.0.1:6667/get_height -H 'Content-Type: application/json' | jq -r '.height')
@@ -92,38 +97,87 @@ wait_sync_monerod(){
 }
 
 test_runtime=()
+test_poptime=()
+test_flushtime=()
+test_synctime=()
 ######### Run test
 for i in $(seq 1 $MAX_ITER);
 do
     # Run monerod
-    if [ "${LOG}" ]; then echo  "Starting and syncing test monero..."; fi
+    _log  "Starting and syncing test monero..."
     $TEST_MONERO --config-file=$TEST_MONERO_CONFIG_LOCATION  > /dev/null & 
     test_monero_pid=$!
     sleep 15s;
+
+
+    # Sync both instance
     wait_sync_monerod
-    if [ "${LOG}" ]; then echo  "Checking the RPC availability"; fi
+
+
+    # Check RPC
+    _log  "Checking the RPC availability"
     curl http://127.0.0.1:6667/get_height -H 'Content-Type: application/json' --silent --output /dev/null
     check_result $? "ERROR: get_height failed for  $i iteration. If this happens in first iteration, you might need syncing both monerod offline. Then running this script."
-    starttime=$(date +%s)
-    if [ "${LOG}" ]; then echo  "Popping blocks..."; fi
+    cyclestarttime=$(date +%s)
+   
+
+    _log  "Popping blocks..."
+    starttime=$(date +%s) 
     curl http://127.0.0.1:6667/pop_blocks -d "{\"nblocks\": $POP_BLOCKS }" -H 'Content-Type: application/json' --silent --output /dev/null
     check_result $? "ERROR: pop_blocks failed for  $i iteration."
-    if [ "${LOG}" ]; then echo  "Flushing tx pool..."; fi
-    curl http://127.0.0.1:6667/flush_txpool -H 'Content-Type: application/json' --silent --output /dev/null
-    check_result $? "ERROR: flush_txpool failed for $i iteration."
-    wait_sync_monerod    
     endtime=$(date +%s)
     runtime=$((endtime-starttime))
+    test_poptime+=($runtime)
+    echo  ">> pop_blocks for iteration " $i " is " $runtime " seconds."
+    
+    
+    _log  "Flushing tx pool..."
+    starttime=$(date +%s) 
+    curl http://127.0.0.1:6667/flush_txpool -H 'Content-Type: application/json' --silent --output /dev/null
+    check_result $? "ERROR: flush_txpool failed for $i iteration."
+    endtime=$(date +%s)
+    runtime=$((endtime-starttime))
+    test_flushtime+=($runtime)
+    echo  ">> flush_txpool for iteration " $i " is " $runtime " seconds."
+
+
+    # Sync both instance
+    starttime=$(date +%s) 
+    wait_sync_monerod
+    endtime=$(date +%s)
+    runtime=$((endtime-starttime))
+    test_synctime+=($runtime)
+    echo  ">> sync for iteration " $i " is " $runtime " seconds."
+    
+    
+    cycleendtime=$(date +%s)
+    runtime=$((cycleendtime-cyclestarttime))
     test_runtime+=($runtime)
     echo  ">> Runtime for iteration " $i " is " $runtime " seconds."
-    if [ "${LOG}" ]; then echo  "Stopping the daemon..."; fi
+
+    
+    _log  "Stopping the daemon..."
     curl http://127.0.0.1:6667/stop_daemon -H 'Content-Type: application/json' --silent --output /dev/null
     check_result $? "ERROR: stop_daemon failed for $i iteration."
+
+    
     wait $test_monero_pid
     # sleep 30s
 done;
 
-echo  ">> Runtime statistics for test branch:"
+
+echo  ">> Runtime statistics for test branch :"
+
+echo ">> pop_blocks time : "
+printf '%s\n' "${test_poptime[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> flush time : "
+printf '%s\n' "${test_flushtime[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> sync time : "
+printf '%s\n' "${test_synctime[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> Complete runtime : "
 printf '%s\n' "${test_runtime[@]}" | datamash max 1 min 1 mean 1 median 1 -H
 
 # Kill the background Monero
