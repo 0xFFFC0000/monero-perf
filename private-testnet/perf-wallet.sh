@@ -65,6 +65,13 @@ curl http://127.0.0.1:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0",
 curl http://127.0.0.1:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"auto_refresh","params":{"enable":true, "period":1}' -H 'Content-Type: application/json' --silent --output /dev/null
 
 test_itertime=()
+open_wallet_times=()
+refresh_wallet_times=()
+check_balance_times=()
+rescan_blockchain_times=()
+rescan_wallet_times=()
+close_wallet_times=()
+
 starttime=$(date +%s)
 
 for i in $(seq $BENCH_ITER)
@@ -74,37 +81,82 @@ do
     iterstarttime=$(date +%s)
 
     # open wallet
+    stepstart=$(date +%s)
     _log "Opening wallet 1"
-    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"open_wallet","params":{"filename":"wallet_01.bin","password":""}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"open_wallet","params":{"filename":"wallet_01.bin","password":""}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Opening wallet 2"
-    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"open_wallet","params":{"filename":"wallet_02.bin","password":""}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"open_wallet","params":{"filename":"wallet_02.bin","password":""}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Opening wallet 3"
-    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"open_wallet","params":{"filename":"wallet_03.bin","password":""}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"open_wallet","params":{"filename":"wallet_03.bin","password":""}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     wait
+    stepend=$(date +%s)
+    steptime=$((stepend-stepstart))
+    open_wallet_times+=($steptime)
+
     # refresh
+    stepstart=$(date +%s)
     _log "Refreshing wallet 1"
-    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"refresh","params":{"start_height":0}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"refresh","params":{"start_height":0}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Refreshing wallet 2"
-    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"refresh","params":{"start_height":0}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"refresh","params":{"start_height":0}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Refreshing wallet 3"
-    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"refresh","params":{"start_height":0}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"refresh","params":{"start_height":0}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     wait
+    stepend=$(date +%s)
+    steptime=$((stepend-stepstart))
+    refresh_wallet_times+=($steptime)
+
     # check balance
+    stepstart=$(date +%s)
     _log "Checking balance 1"
-    curl http://127.0.0.1:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_balance","params":{"account_index":0,"address_indices":[0,0]}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://127.0.0.1:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_balance","params":{"account_index":0,"address_indices":[0,0]}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Checking balance 2"
-    curl http://127.0.0.1:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_balance","params":{"account_index":0,"address_indices":[0,0]}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://127.0.0.1:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_balance","params":{"account_index":0,"address_indices":[0,0]}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Checking balance 3"
-    curl http://127.0.0.1:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_balance","params":{"account_index":0,"address_indices":[0,0]}}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://127.0.0.1:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_balance","params":{"account_index":0,"address_indices":[0,0]}}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     wait
+    stepend=$(date +%s)
+    steptime=$((stepend-stepstart))
+    check_balance_times+=($steptime)
+
+    # rescan blockchain
+    stepstart=$(date +%s)
+    _log "Rescan blockchain 1"
+    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"rescan_blockchain"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
+    _log "Rescan blockchain 2"
+    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"rescan_blockchain"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
+    _log "Rescan blockchain 3"
+    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"rescan_blockchain"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
+    wait
+    stepend=$(date +%s)
+    steptime=$((stepend-stepstart))
+    rescan_blockchain_times+=($steptime)
+
+    # rescan wallet
+    stepstart=$(date +%s)
+    _log "Rescan wallet 1"
+    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"rescan_spent"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
+    _log "Rescan wallet 2"
+    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"rescan_spent"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
+    _log "Rescan wallet 3"
+    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"rescan_spent"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
+    wait
+    stepend=$(date +%s)
+    steptime=$((stepend-stepstart))
+    rescan_wallet_times+=($steptime)
+
     # close wallet
+    stepstart=$(date +%s)
     _log "Close balance 1"
-    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"close_wallet"}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_1/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"close_wallet"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Close balance 2"
-    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"close_wallet"}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_2/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"close_wallet"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     _log "Close balance 3"
-    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"close_wallet"}' -H 'Content-Type: application/json'   --silent --output /dev/null &
+    curl http://localhost:$WALLET_RPC_PORT_3/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"close_wallet"}' -H 'Content-Type: application/json'    --silent --output /dev/null &
     wait
+    stepend=$(date +%s)
+    steptime=$((stepend-stepstart))
+    close_wallet_times+=($steptime)
 
     iterendtime=$(date +%s)
     itertime=$((iterendtime-iterstarttime))
@@ -117,6 +169,26 @@ echo ">>>>> Runtime Test was " $runtime " seconds."
 
 _log ">>>>> Each iteration runtime : "
 printf '%s\n' "${test_itertime[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo  ">> Runtime statistics for test branch :"
+
+echo ">> open wallet time : "
+printf '%s\n' "${open_wallet_times[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> refresh wallet time : "
+printf '%s\n' "${refresh_wallet_times[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> check balance time : "
+printf '%s\n' "${check_balance_times[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> rescan blockchain time : "
+printf '%s\n' "${rescan_blockchain_times[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> rescan time : "
+printf '%s\n' "${rescan_wallet_times[@]}" | datamash max 1 min 1 mean 1 median 1 -H
+
+echo ">> close time : "
+printf '%s\n' "${close_wallet_times[@]}" | datamash max 1 min 1 mean 1 median 1 -H
 
 # finish monero-wallet-rpc
 killall -9 monero-wallet-rpc -q

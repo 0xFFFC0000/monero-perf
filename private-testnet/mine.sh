@@ -53,6 +53,8 @@ fi
 killall -9 monerod -q  > /dev/null
 sleep 2s
 
+_sync_all_nodes
+
 _log "Running node... "
 monerod --p2p-bind-port $NODE_1_P2P_PORT --rpc-bind-port $NODE_1_RPC_PORT --data-dir $PRIVATE_TESTNET_LOCATION/node_01 --p2p-bind-ip $NODE_IP --add-exclusive-node $NODE_IP:$NODE_2_P2P_PORT --add-exclusive-node $NODE_IP:$NODE_3_P2P_PORT --fixed-difficulty $DIFFICULTY --config-file nodes.config --detach  > /dev/null # --start-mining $WALLET_1_ADDRESS
 sleep 1s
