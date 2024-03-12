@@ -27,15 +27,15 @@ fi
 case "$1" in
     "1")
         echo  "opening wallet 1..."
-        monero-wallet-cli --restore-height 0 --testnet --daemon-port $NODE_1_RPC_PORT --trusted-daemon --wallet-file $PRIVATE_TESTNET_LOCATION/wallet_01.bin --password '' --log-file $PRIVATE_TESTNET_LOCATION/wallet_01.log
+        $MONERO_WALLET_CLI --restore-height 0 --testnet --daemon-port $NODE_1_RPC_PORT --trusted-daemon --wallet-file $PRIVATE_TESTNET_LOCATION/wallet_01.bin --password '' --log-file $PRIVATE_TESTNET_LOCATION/wallet_01.log
         ;;
     "2")
         echo  "opening wallet 2..."
-        monero-wallet-cli --restore-height 0 --testnet --daemon-port $NODE_2_RPC_PORT --trusted-daemon --wallet-file $PRIVATE_TESTNET_LOCATION/wallet_02.bin --password '' --log-file $PRIVATE_TESTNET_LOCATION/wallet_02.log
+        $MONERO_WALLET_CLI --restore-height 0 --testnet --daemon-port $NODE_2_RPC_PORT --trusted-daemon --wallet-file $PRIVATE_TESTNET_LOCATION/wallet_02.bin --password '' --log-file $PRIVATE_TESTNET_LOCATION/wallet_02.log
         ;;
     "3")
         echo  "opening wallet 3..."
-        monero-wallet-cli --restore-height 0 --testnet --daemon-port $NODE_3_RPC_PORT --trusted-daemon --wallet-file $PRIVATE_TESTNET_LOCATION/wallet_03.bin --password '' --log-file $PRIVATE_TESTNET_LOCATION/wallet_03.log
+        $MONERO_WALLET_CLI --restore-height 0 --testnet --daemon-port $NODE_3_RPC_PORT --trusted-daemon --wallet-file $PRIVATE_TESTNET_LOCATION/wallet_03.bin --password '' --log-file $PRIVATE_TESTNET_LOCATION/wallet_03.log
         ;;
 esac
 

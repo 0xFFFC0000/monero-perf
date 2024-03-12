@@ -3,7 +3,29 @@
 if [[ ! $PRIVATE_TESTNET_LOCATION ]];
 then
   echo "PRIVATE_TESTNET_LOCATION variable is not defined."
-  exit 1
+  export PRIVATE_TESTNET_LOCATION=$HOME/PRIVATE_TESTNET
+fi
+
+if [[ ! $BIN_DIR ]];
+then
+  echo "BIN_DIR variable is not defined."
+  export MONEROD=$(which monerod)
+  export MONERO_WALLET_CLI=$(which monero-wallet-cli)
+  export MONERO_WALLET_RPC=$(which monero-wallet-rpc)
+
+  if [ -z "${MONEROD}" ] || [ -z "${MONERO_WALLET_CLI}" ] || [ -z "${MONERO_WALLET_RPC}" ];
+  then
+    echo "Unable to find executables correctly."
+    echo "monerod : $MONEROD"
+    echo "monero-wallet-cli : $MONERO_WALLET_CLI"
+    echo "monero-wallet-rpc : $MONERO_WALLET_RPC"
+    echo "Error."
+    exit 1
+  fi
+else
+  export MONEROD=$BIN_DIR/monerod
+  export MONERO_WALLET_CLI=$BIN_DIR/monero-wallet-cli
+  export MONERO_WALLET_RPC=$BIN_DIR/monero-wallet-rpc
 fi
 
 export DNS_PUBLIC=tcp://9.9.9.9

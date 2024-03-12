@@ -27,14 +27,14 @@ fi
 case "$1" in
     "1")
         echo  "Running node 1..."
-        monero-wallet-rpc --testnet --daemon-address $NODE_IP:$NODE_1_RPC_PORT --wallet-dir $PRIVATE_TESTNET_LOCATION/ --password "" --log-level=0 --rpc-bind-port $WALLET_RPC_PORT --daemon-ssl-allow-any-cert --disable-rpc-login
+        $MONERO_WALLET_RPC --testnet --daemon-address $NODE_IP:$NODE_1_RPC_PORT --wallet-dir $PRIVATE_TESTNET_LOCATION/ --password "" --log-level=0 --rpc-bind-port $WALLET_RPC_PORT --daemon-ssl-allow-any-cert --disable-rpc-login
         ;;
     "2")
         echo  "Running node 2..."
-        monero-wallet-rpc --testnet --daemon-address $NODE_IP:$NODE_2_RPC_PORT --wallet-dir $PRIVATE_TESTNET_LOCATION/ --password "" --log-level=2 --rpc-bind-port $WALLET_RPC_PORT --daemon-ssl-allow-any-cert --disable-rpc-login
+        $MONERO_WALLET_RPC --testnet --daemon-address $NODE_IP:$NODE_2_RPC_PORT --wallet-dir $PRIVATE_TESTNET_LOCATION/ --password "" --log-level=2 --rpc-bind-port $WALLET_RPC_PORT --daemon-ssl-allow-any-cert --disable-rpc-login
         ;;
     "3")
         echo  "Running node 3..."
-        monero-wallet-rpc --testnet --daemon-address $NODE_IP:$NODE_3_RPC_PORT --wallet-dir $PRIVATE_TESTNET_LOCATION/ --password "" --log-level=0 --rpc-bind-port $WALLET_RPC_PORT --daemon-ssl-allow-any-cert --disable-rpc-login
+        $MONERO_WALLET_RPC --testnet --daemon-address $NODE_IP:$NODE_3_RPC_PORT --wallet-dir $PRIVATE_TESTNET_LOCATION/ --password "" --log-level=0 --rpc-bind-port $WALLET_RPC_PORT --daemon-ssl-allow-any-cert --disable-rpc-login
         ;;
 esac
